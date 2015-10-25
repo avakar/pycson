@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='cson',
-    version='0.1.0',
+    version='0.1.1',
 
     description='A parser for Coffeescript Object Notation (CSON)',
     author='Martin Vejnár',
