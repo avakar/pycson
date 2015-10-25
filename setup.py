@@ -9,7 +9,7 @@ setup(
 
     description='A parser for Coffeescript Object Notation (CSON)',
     author='Martin Vejnár',
-    author_email='avakar@ratatanek.cz',
+    author_email='vejnar.martin@gmail.cz',
     url='https://github.com/avakar/pycson',
     license='MIT',
 
