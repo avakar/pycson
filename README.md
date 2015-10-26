@@ -6,7 +6,7 @@ This is a python parser for the Coffeescript Object Notation (CSON).
 
 Install:
 
-    pip install pycson
+    pip install cson
 
 The interface is the same as for the standard `json` package.
 
