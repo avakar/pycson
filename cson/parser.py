@@ -1,10 +1,11 @@
-﻿from peg import peg
+from peg import peg
+import re
 
 def load(fin):
     return loads(fin.read())
 
 def loads(s):
-    return peg(s, _p_root)
+    return peg(s.replace('\r\n', '\n'), _p_root)
 
 def _p_ws(p):
     p('[ \t]*')
@@ -20,14 +21,90 @@ def _p_ews(p):
 def _p_id(p):
     return p(r'[$a-zA-Z_][$0-9a-zA-Z_]*')
 
+_escape_table = {
+    'r': '\r',
+    'n': '\n',
+    't': '\t',
+    'f': '\f',
+    'b': '\b',
+    '/': '\/',
+    '\\': '\\',
+    '"': '"',
+    "'": "'",
+}
+def _p_unescape(p):
+    esc = p('\\\\(?:[rntfb\\\\/"\']|u[0-9a-fA-F]{4})')
+    if esc[0] == 'u':
+        return unichr(int(esc[1:], 16))
+    return _escape_table[esc[1:]]
+
+_re_indent = re.compile(r'[ \t]*')
+def _p_block_str(p, c):
+    p(r'{c}{c}{c}'.format(c=c))
+    lines = [['']]
+    with p:
+        while True:
+            s = p(r'(?:{c}(?!{c}{c})|[^{c}\\])*'.format(c=c))
+            l = s.split('\n')
+            lines[-1].append(l[0])
+            lines.extend([x] for x in l[1:])
+            if p(r'(?:\\\n[ \t]*)*'):
+                continue
+            p.commit()
+            lines[-1].append(p(_p_unescape))
+    p(r'{c}{c}{c}'.format(c=c))
+
+    lines = [''.join(l) for l in lines]
+    strip_ws = len(lines) > 1
+    if strip_ws and all(c in ' \t' for c in lines[-1]):
+        lines.pop()
+
+    indent = None
+    for line in lines[1:]:
+        if not line:
+            continue
+        if indent is None:
+            indent = _re_indent.match(line).group(0)
+            continue
+        for i, (c1, c2) in enumerate(zip(indent, line)):
+            if c1 != c2:
+                indent = indent[:i]
+                break
+
+    ind_len = len(indent or '')
+    if strip_ws and all(c in ' \t' for c in lines[0]):
+        lines = [line[ind_len:] for line in lines[1:]]
+    else:
+        lines[1:] = [line[ind_len:] for line in lines[1:]]
+
+    return '\n'.join(lines)
+
+_re_mstr_nl = re.compile(r'(?:[ \t]*\n)+[ \t]*')
+_re_mstr_trailing_nl = re.compile(_re_mstr_nl.pattern + r'\Z')
+def _p_multiline_str(p, c):
+    p('{c}(?!{c}{c})(?:[ \t]*\n[ \t]*)?'.format(c=c))
+    string_parts = []
+    with p:
+        while True:
+            string_parts.append(p(r'[^{c}\\]*'.format(c=c)))
+            if p(r'(?:\\\n[ \t]*)*'):
+                string_parts.append('')
+                continue
+            p.commit()
+            string_parts.append(p(_p_unescape))
+    p(c)
+    string_parts[-1] = _re_mstr_trailing_nl.sub('', string_parts[-1])
+    string_parts[::2] = [_re_mstr_nl.sub(' ', part) for part in string_parts[::2]]
+    return ''.join(string_parts)
+
 def _p_string(p):
     with p:
-        return p(r'"""(?:\\.|(?!""")(?!#\{).)*"""')[3:-3]
+        return p(_p_block_str, '"')
     with p:
-        return p(r"'''(?:\\.|(?!''')(?!#\{).)*'''")[3:-3]
+        return p(_p_block_str, "'")
     with p:
-        return p(r'"(?!"")(?:\\.|(?!#\{)[^"])*"')[1:-1]
-    return p(r"'(?!'')(?:\\.|(?!#\{)[^'])*'")[1:-1]
+        return p(_p_multiline_str, '"')
+    return p(_p_multiline_str, "'")
 
 def _p_array_value(p):
     with p:

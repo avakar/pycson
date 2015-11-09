@@ -32,6 +32,8 @@ for name in os.listdir(srcdir):
         j = json.load(fin)
     if c != j:
         print 'error:', name
+        print json.dumps(c)
+        print json.dumps(j)
         errors.append(name)
         continue
     with open(os.path.join(srcdir, json_name), 'r') as fin:
@@ -43,6 +45,8 @@ for name in os.listdir(srcdir):
             continue
     if c != j:
         print 'error:', name
+        print json.dumps(c)
+        print json.dumps(j)
         errors.append(name)
 
 if errors:

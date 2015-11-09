@@ -43,7 +43,7 @@ class _Peg:
         self._errors = {}
         self._re_cache = {}
 
-    def __call__(self, r, err=None):
+    def __call__(self, r, *args, **kw):
         if isinstance(r, str):
             compiled = self._re_cache.get(r)
             if not compiled:
@@ -52,7 +52,7 @@ class _Peg:
             st = self._states[-1]
             m = compiled.match(self._s[st.pos:])
             if not m:
-                self.error(expr=r, err=err)
+                self.error(expr=r, err=kw.get('err'))
 
             ms = m.group(0)
             st.pos += len(ms)
@@ -64,7 +64,8 @@ class _Peg:
                 st.line += ms[:nl_pos].count('\n') + 1
             return ms
         else:
-            return r(self)
+            kw.pop('err', None)
+            return r(self, *args, **kw)
 
     def __repr__(self):
         pos = self._states[-1].pos
