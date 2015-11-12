@@ -44,7 +44,7 @@ class _Peg:
         self._re_cache = {}
 
     def __call__(self, r, *args, **kw):
-        if isinstance(r, str):
+        if isinstance(r, basestring):
             compiled = self._re_cache.get(r)
             if not compiled:
                 compiled = re.compile(r)
