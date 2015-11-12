@@ -1,12 +1,18 @@
-import re
+import sys, re
 
 class ParseError(Exception):
     def __init__(self, msg, text, offset, line, col):
+        self.msg = msg
         self.text = text
         self.offset = offset
         self.line = line
         self.col = col
-        super(ParseError, self).__init__(msg)
+        super(ParseError, self).__init__(msg, text, offset, line, col)
+
+if sys.version_info[0] == 2:
+    _basestr = basestring
+else:
+    _basestr = str
 
 def peg(s, r):
     p = _Peg(s)
@@ -44,7 +50,7 @@ class _Peg:
         self._re_cache = {}
 
     def __call__(self, r, *args, **kw):
-        if isinstance(r, basestring):
+        if isinstance(r, _basestr):
             compiled = self._re_cache.get(r)
             if not compiled:
                 compiled = re.compile(r)
@@ -115,3 +121,5 @@ class _Peg:
 
     def __nonzero__(self):
         return self._states[-1].committed
+
+    __bool__ = __nonzero__

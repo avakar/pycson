@@ -1,11 +1,16 @@
-from peg import peg
-import re
+from .peg import peg
+import re, sys
+
+if sys.version_info[0] == 2:
+    _chr = unichr
+else:
+    _chr = chr
 
 def load(fin):
     return loads(fin.read())
 
 def loads(s):
-    if not isinstance(s, unicode):
+    if isinstance(s, bytes):
         s = s.decode('utf-8')
     if s.startswith(u'\ufeff'):
         s = s[1:]
@@ -39,7 +44,7 @@ _escape_table = {
 def _p_unescape(p):
     esc = p('\\\\(?:[rntfb\\\\/"\']|u[0-9a-fA-F]{4})')
     if esc[1] == 'u':
-        return unichr(int(esc[2:], 16))
+        return _chr(int(esc[2:], 16))
     return _escape_table[esc[1:]]
 
 _re_indent = re.compile(r'[ \t]*')

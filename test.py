@@ -22,34 +22,34 @@ for name in os.listdir(srcdir):
         try:
             c = cson.load(fin)
         except cson.ParseError as e:
-            print '{}({},{}): error: {}'.format(name, e.line, e.col, e.message)
+            print('{}({},{}): error: {}'.format(name, e.line, e.col, e.msg))
             errors.append(name)
             continue
 
     json_name = name[:-5] + '.json'
 
-    with open(os.path.join(srcdir, json_name), 'r') as fin:
-        j = json.load(fin)
+    with open(os.path.join(srcdir, json_name), 'rb') as fin:
+        j = json.loads(fin.read().decode('utf-8'))
     if c != j:
-        print 'error:', name
-        print json.dumps(c)
-        print json.dumps(j)
+        print('error: {}'.format(name))
+        print(repr(c))
+        print(repr(j))
         errors.append(name)
         continue
-    with open(os.path.join(srcdir, json_name), 'r') as fin:
+    with open(os.path.join(srcdir, json_name), 'rb') as fin:
         try:
             c = cson.load(fin)
         except cson.ParseError as e:
-            print '{}({},{}): error: {}'.format(json_name, e.line, e.col, e.message)
+            print('{}({},{}): error: {}'.format(json_name, e.line, e.col, e.msg))
             errors.append(name)
             continue
     if c != j:
-        print 'error:', name
-        print json.dumps(c)
-        print json.dumps(j)
+        print('error: {}'.format(name))
+        print(repr(c))
+        print(repr(j))
         errors.append(name)
 
 if errors:
     sys.exit(1)
 
-print 'succeeded: %s' % total
+print('succeeded: {}'.format(total))
