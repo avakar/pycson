@@ -36,16 +36,12 @@ _escape_table = {
     't': '\t',
     'f': '\f',
     'b': '\b',
-    '/': '\/',
-    '\\': '\\',
-    '"': '"',
-    "'": "'",
 }
 def _p_unescape(p):
-    esc = p('\\\\(?:[rntfb\\\\/"\']|u[0-9a-fA-F]{4})')
+    esc = p('\\\\(?:u[0-9a-fA-F]{4}|[^\n])')
     if esc[1] == 'u':
         return _chr(int(esc[2:], 16))
-    return _escape_table[esc[1:]]
+    return _escape_table.get(esc[1:], esc[1:])
 
 _re_indent = re.compile(r'[ \t]*')
 def _p_block_str(p, c):
