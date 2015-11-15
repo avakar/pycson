@@ -6,6 +6,8 @@ A python parser for the Coffeescript Object Notation (CSON).
 
 ## Installation
 
+The parser is tested on Python 2.7 and 3.4.
+
     pip install cson
 
 The interface is the same as for the standard `json` package.
