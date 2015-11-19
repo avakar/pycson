@@ -9,9 +9,10 @@ setup(
 
     description='A parser for Coffeescript Object Notation (CSON)',
     author='Martin Vejnár',
-    author_email='vejnar.martin@gmail.cz',
+    author_email='vejnar.martin@gmail.com',
     url='https://github.com/avakar/pycson',
     license='MIT',
 
     packages=['cson'],
+    install_requires=['speg'],
     )

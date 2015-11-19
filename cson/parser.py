@@ -1,4 +1,4 @@
-from .peg import peg
+from speg import peg
 import re, sys
 
 if sys.version_info[0] == 2:
