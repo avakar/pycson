@@ -86,6 +86,15 @@ for name in os.listdir(srcdir):
         print(repr(j))
         errors.append(name)
 
+try:
+    o = []
+    o.append({'a': o})
+    cson.dumps(o, indent=4)
+except ValueError:
+    pass
+else:
+    print('check_circular doesn\'t work')
+
 if errors:
     sys.exit(1)
 

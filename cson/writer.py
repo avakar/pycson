@@ -26,11 +26,14 @@ class CSONEncoder:
             indent=None, default=None):
         self._skipkeys = skipkeys
         self._ensure_ascii = ensure_ascii
-        self._check_circular = check_circular
         self._allow_nan = allow_nan
         self._sort_keys = sort_keys
         self._indent = ' ' * (indent or 4)
         self._default = default
+        if check_circular:
+            self._obj_stack = set()
+        else:
+            self._obj_stack = None
 
     def _format_simple_val(self, o):
         if o is None:
@@ -53,6 +56,16 @@ class CSONEncoder:
             return self._escape_string(s)
         return s
 
+    def _push_obj(self, o):
+        if self._obj_stack is not None:
+            if id(o) in self._obj_stack:
+                raise ValueError('Circular reference detected')
+            self._obj_stack.add(id(o))
+
+    def _pop_obj(self, o):
+        if self._obj_stack is not None:
+            self._obj_stack.remove(id(o))
+
     def _encode(self, o, obj_val=False, indent='', force_flow=False):
         if isinstance(o, list):
             if not o:
@@ -68,9 +81,11 @@ class CSONEncoder:
                     yield indent
                     yield '[\n'
                     indent = indent + self._indent
+                self._push_obj(o)
                 for v in o:
                     for chunk in self._encode(v, obj_val=False, indent=indent, force_flow=True):
                         yield chunk
+                self._pop_obj(o)
                 yield indent[:-len(self._indent)]
                 yield ']\n'
         elif isinstance(o, dict):
@@ -91,23 +106,27 @@ class CSONEncoder:
                         yield indent
                         yield '{\n'
                         indent = indent + self._indent
+                    self._push_obj(o)
                     for k, v in items:
                         yield indent
                         yield self._escape_key(k)
                         yield ':'
                         for chunk in self._encode(v, obj_val=True, indent=indent + self._indent, force_flow=False):
                             yield chunk
+                    self._pop_obj(o)
                     yield indent[:-len(self._indent)]
                     yield '}\n'
             else:
                 if obj_val:
                     yield '\n'
+                self._push_obj(o)
                 for k, v in items:
                     yield indent
                     yield self._escape_key(k)
                     yield ':'
                     for chunk in self._encode(v, obj_val=True, indent=indent + self._indent, force_flow=False):
                         yield chunk
+                self._pop_obj(o)
         else:
             v = self._format_simple_val(o)
             if v is None:
