@@ -1,3 +1,3 @@
 from .parser import load, loads
+from .writer import dump, dumps
 from speg import ParseError
-from json import dump, dumps

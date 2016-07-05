@@ -9,7 +9,7 @@ errors = []
 def matches(name):
     return not sys.argv[1:] or name in sys.argv[1:]
 
-srcdir = os.path.join(os.path.split(__file__)[0], 'test')
+srcdir = os.path.join(os.path.split(__file__)[0], 'test', 'parser')
 for name in os.listdir(srcdir):
     if not name.endswith('.cson'):
         continue
@@ -22,7 +22,7 @@ for name in os.listdir(srcdir):
         try:
             c = cson.load(fin)
         except cson.ParseError as e:
-            print('{}({},{}): error: {}'.format(name, e.line, e.col, e.msg))
+            print('parser/{}({},{}): error: {}'.format(name, e.line, e.col, e.msg))
             errors.append(name)
             continue
 
@@ -40,9 +40,46 @@ for name in os.listdir(srcdir):
         try:
             c = cson.load(fin)
         except cson.ParseError as e:
-            print('{}({},{}): error: {}'.format(json_name, e.line, e.col, e.msg))
+            print('parser/{}({},{}): error: {}'.format(json_name, e.line, e.col, e.msg))
             errors.append(name)
             continue
+    if c != j:
+        print('error: {}'.format(name))
+        print(repr(c))
+        print(repr(j))
+        errors.append(name)
+
+srcdir = os.path.join(os.path.split(__file__)[0], 'test', 'writer')
+for name in os.listdir(srcdir):
+    if not name.endswith('.json'):
+        continue
+    if not matches(name):
+        continue
+    total += 1
+    json_fname = os.path.join(srcdir, name)
+    with open(json_fname, 'rb') as fin:
+        j = json.load(fin)
+
+    c = cson.dumps(j, indent=4, sort_keys=True, ensure_ascii=False)
+
+    cson_name = name[:-5] + '.cson'
+    with open(os.path.join(srcdir, cson_name), 'rt') as fin:
+        cc = fin.read().decode('utf-8')
+
+    if c != cc:
+        print('error: {}'.format(name))
+        print(repr(c))
+        print(repr(cc))
+        errors.append(name)
+        continue
+
+    try:
+        c = cson.loads(c)
+    except cson.ParseError as e:
+        print('writer/{}({},{}): error: {}'.format(name, e.line, e.col, e.msg))
+        errors.append(name)
+        continue
+
     if c != j:
         print('error: {}'.format(name))
         print(repr(c))
