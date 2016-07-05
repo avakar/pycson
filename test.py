@@ -58,13 +58,13 @@ for name in os.listdir(srcdir):
     total += 1
     json_fname = os.path.join(srcdir, name)
     with open(json_fname, 'rb') as fin:
-        j = json.load(fin)
+        j = json.loads(fin.read().decode('utf-8'))
 
     c = cson.dumps(j, indent=4, sort_keys=True, ensure_ascii=False)
 
     cson_name = name[:-5] + '.cson'
-    with open(os.path.join(srcdir, cson_name), 'rt') as fin:
-        cc = fin.read().decode('utf-8')
+    with open(os.path.join(srcdir, cson_name), 'rb') as fin:
+        cc = fin.read().decode('utf-8').replace('\r\n', '\n')
 
     if c != cc:
         print('error: {}'.format(name))

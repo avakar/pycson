@@ -1,4 +1,24 @@
-import re, json
+import re, json, sys
+
+if sys.version_info[0] == 2:
+    def _is_num(o):
+        return isinstance(o, int) or isinstance(o, long) or isinstance(o, float)
+    def _stringify(o):
+        if isinstance(o, str):
+            return unicode(o)
+        if isinstance(o, unicode):
+            return o
+        return None
+else:
+    def _is_num(o):
+        return isinstance(o, int) or isinstance(o, float)
+    def _stringify(o):
+        if isinstance(o, bytes):
+            return o.decode()
+        if isinstance(o, str):
+            return o
+        return None
+
 _id_re = re.compile(r'[$a-zA-Z_][$0-9a-zA-Z_]*')
 
 class CSONEncoder:
@@ -17,10 +37,11 @@ class CSONEncoder:
             return 'null'
         if isinstance(o, bool):
             return 'true' if o else 'false'
-        if isinstance(o, int) or isinstance(o, long) or isinstance(o, float):
+        if _is_num(o):
             return str(o)
-        if isinstance(o, str) or isinstance(o, unicode):
-            return self._escape_string(o)
+        s = _stringify(o)
+        if s is not None:
+            return self._escape_string(s)
         return None
 
     def _escape_string(self, s):
@@ -53,7 +74,7 @@ class CSONEncoder:
                 yield indent[:-len(self._indent)]
                 yield ']\n'
         elif isinstance(o, dict):
-            items = o.items()
+            items = list(o.items())
             if self._sort_keys:
                 items.sort()
             if force_flow or not o:
