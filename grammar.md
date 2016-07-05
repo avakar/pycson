@@ -6,7 +6,7 @@ to the expression `e` while matching `E`.
 
 In CSON, whitespace may contain spaces and tabs. This is more strict than
 Coffeescript where any `[^\n\S]` will match.
-The symbol `nl` will match any represents one or more newlines that only contain whitespace
+The symbol `nl` will match one or more newlines that only contain whitespace
 or comments in between. A match for `nl` also matches any whitespace preceding the first
 newline. `ews` is the "extended whitespace", one that incudes newlines.
 Note however that `ews` ending in a comment must be terminated by a newline character.
@@ -71,7 +71,8 @@ as for arrays, the indent is reset.
 
     flow_kv <- (id / string) ews ':'
         (nl object / ws line_object / ews simple_value)
-    flow_object <- '{' ews (flow_kv ews (',' ews flow_kv ews)* (',' ews)?)?{I=} '}'
+    flow_obj_sep <- ews ',' ews / nl ws
+    flow_object <- '{' ews (flow_kv  (flow_obj_sep flow_kv)* ews (',' ews)?)?{I=} '}'
 
 A simple value is one which is not sensitive to the position within the document
 or to the current indent level.

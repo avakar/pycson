@@ -139,6 +139,16 @@ def _p_flow_kv(p):
     p(_p_ews)
     return k, p(_p_simple_value)
 
+def _p_flow_obj_sep(p):
+    with p:
+        p(_p_ews)
+        p(',')
+        p(_p_ews)
+        return
+
+    p(_p_nl)
+    p(_p_ws)
+
 def _p_simple_value(p):
     with p:
         p('null')
@@ -201,15 +211,13 @@ def _p_simple_value(p):
         p.set('I', '')
         k, v = p(_p_flow_kv)
         r[k] = v
-        p(_p_ews)
         with p:
             while True:
-                p(',')
-                p(_p_ews)
+                p(_p_flow_obj_sep)
                 k, v = p(_p_flow_kv)
                 r[k] = v
-                p(_p_ews)
                 p.commit()
+        p(_p_ews)
         with p:
             p(',')
             p(_p_ews)
