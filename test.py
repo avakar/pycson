@@ -94,6 +94,43 @@ except ValueError:
     pass
 else:
     print('check_circular doesn\'t work')
+    errors.append('check_circular')
+
+class X:
+    pass
+
+xx = [1]
+def x_def(x):
+    return xx
+
+c = cson.dumps(X(), default=x_def)
+if c != '[1]':
+    print('default doesn\'t work')
+    print(c)
+    errors.append('default')
+
+c = cson.dumps(X(), indent=4, default=x_def)
+if c != '[\n    1\n]\n':
+    print('default doesn\'t work')
+    print(c)
+    errors.append('default')
+
+xx.append(xx)
+try:
+    cson.dumps(xx, default=x_def)
+except ValueError:
+    pass
+else:
+    print('check_circular doesn\'t work')
+    errors.append('check_circular')
+
+try:
+    cson.dumps(xx, indent=4, default=x_def)
+except ValueError:
+    pass
+else:
+    print('check_circular doesn\'t work')
+    errors.append('check_circular')
 
 if errors:
     sys.exit(1)

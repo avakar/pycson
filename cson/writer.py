@@ -130,8 +130,11 @@ class CSONEncoder:
         else:
             v = self._format_simple_val(o)
             if v is None:
-                for chunk in self._encode(self.default(v), obj_val=obj_val, indent=indent, force_flow=force_flow):
+                self._push_obj(o)
+                v = self.default(o)
+                for chunk in self._encode(v, obj_val=obj_val, indent=indent, force_flow=force_flow):
                     yield chunk
+                self._pop_obj(o)
             else:
                 if obj_val:
                     yield ' '
