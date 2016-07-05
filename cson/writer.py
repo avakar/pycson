@@ -52,6 +52,13 @@ class CSONEncoder:
         return u"'{}'".format(r[1:-1])
 
     def _escape_key(self, s):
+        if s is None or isinstance(s, bool) or _is_num(s):
+            s = str(s)
+        s = _stringify(s)
+        if s is None:
+            if self._skipkeys:
+                return None
+            raise TypeError('keys must be a string')
         if not _id_re.match(s):
             return self._escape_string(s)
         return s
@@ -89,11 +96,13 @@ class CSONEncoder:
                 yield indent[:-len(self._indent)]
                 yield ']\n'
         elif isinstance(o, dict):
-            items = list(o.items())
+            items = [(self._escape_key(k), v) for k, v in o.items()]
+            if self._skipkeys:
+                items = [(k, v) for k, v in items if k is not None]
             if self._sort_keys:
                 items.sort()
-            if force_flow or not o:
-                if not o:
+            if force_flow or not items:
+                if not items:
                     if obj_val:
                         yield ' {}\n'
                     else:
@@ -109,7 +118,7 @@ class CSONEncoder:
                     self._push_obj(o)
                     for k, v in items:
                         yield indent
-                        yield self._escape_key(k)
+                        yield k
                         yield ':'
                         for chunk in self._encode(v, obj_val=True, indent=indent + self._indent, force_flow=False):
                             yield chunk
@@ -122,7 +131,7 @@ class CSONEncoder:
                 self._push_obj(o)
                 for k, v in items:
                     yield indent
-                    yield self._escape_key(k)
+                    yield k
                     yield ':'
                     for chunk in self._encode(v, obj_val=True, indent=indent + self._indent, force_flow=False):
                         yield chunk

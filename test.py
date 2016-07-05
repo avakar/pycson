@@ -132,6 +132,26 @@ else:
     print('check_circular doesn\'t work')
     errors.append('check_circular')
 
+c = cson.dumps({1: 1}, indent=4)
+if c != "'1': 1\n":
+    print('non-string keys')
+    print(c)
+    errors.append('non-string keys')
+
+c = cson.dumps({X(): 1}, indent=4, skipkeys=True)
+if c != "{}\n":
+    print('skipkeys')
+    print(c)
+    errors.append('skipkeys')
+
+try:
+    cson.dumps({X(): 1}, indent=4)
+except TypeError:
+    pass
+else:
+    print('skipkeys')
+    errors.append('skipkeys')
+
 if errors:
     sys.exit(1)
 
