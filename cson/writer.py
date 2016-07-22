@@ -49,7 +49,7 @@ class CSONEncoder:
 
     def _escape_string(self, s):
         r = json.dumps(s, ensure_ascii=self._ensure_ascii)
-        return u"'{}'".format(r[1:-1])
+        return u"'{}'".format(r[1:-1].replace("'", r"\'"))
 
     def _escape_key(self, s):
         if s is None or isinstance(s, bool) or _is_num(s):
