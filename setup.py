@@ -8,7 +8,7 @@ with open('README.md', 'r') as fin:
 
 setup(
     name='cson',
-    version='0.7',
+    version='0.8',
 
     description='A parser for Coffeescript Object Notation (CSON)',
     long_description=_long_description,
