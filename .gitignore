@@ -5,3 +5,5 @@ __pycache__/
 .tox/
 .pytest_cache/
 .vscode/
+build/
+dist/
